@@ -1,0 +1,11 @@
+[project]
+name = "rl-david-silver-2015"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "jax>=0.6.0",
+    "jaxtyping>=0.3.2",
+    "numpy>=2.2.5",
+]
