@@ -105,7 +105,7 @@ wheels = [
 [[package]]
 name = "rl-david-silver-2015"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "jax" },
     { name = "jaxtyping" },

@@ -1,9 +1,8 @@
 from typing import List, Tuple
 import jax.numpy as jnp
-from mdp import MDP
+from rl_david_silver_2015.mdp import MDP
 
-
-def create_grid_world_2d(
+def create_gridworld2d(
     shape: Tuple[int, int] = (4, 4),
     terminal_states: List[Tuple[int, int]] = [(0, 0), (3, 3)],
     step_cost: float = -1.0,
