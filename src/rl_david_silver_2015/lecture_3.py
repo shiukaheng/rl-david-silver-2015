@@ -5,7 +5,8 @@ We demonstrate what we can do given a MDP (Markov Decision Process) and a policy
 
 from rl_david_silver_2015.gridworld2d import create_gridworld2d
 from rl_david_silver_2015.gridworld2d_tui import gridworld2d_policy_rollout_tui
-from rl_david_silver_2015.iter_policy import iter_policy
+from rl_david_silver_2015.policy_iteration import policy_iteration
+from rl_david_silver_2015.value_iteration import value_iteration
 
 if __name__ == "__main__":
 
@@ -14,6 +15,8 @@ if __name__ == "__main__":
     mdp.validate()
 
     # Perform policy iteration
-    optimal_policy, optimal_value = iter_policy(mdp)
+    optimal_policy, optimal_value = policy_iteration(mdp)
+
+    optimal_value, optimal_policy = value_iteration(mdp)
 
     gridworld2d_policy_rollout_tui(mdp, optimal_policy, V=optimal_value, terminal_states=[(0, 0), (3, 3)])

@@ -10,7 +10,7 @@ from jaxtyping import Array
 from typing import Tuple
 
 
-def iter_policy(mdp: MDP, theta=1e-10, max_iters=1000) -> Tuple[Policy, Array]:
+def policy_iteration(mdp: MDP, theta=1e-10, max_iters=1000) -> Tuple[Policy, Array]:
     """
     Full Policy Iteration: iterates evaluation and greedy improvement until convergence.
     Returns:
@@ -47,5 +47,33 @@ def iter_policy(mdp: MDP, theta=1e-10, max_iters=1000) -> Tuple[Policy, Array]:
 
     if not policy_stable:
         print("⚠️ Policy did not converge within iteration limit.")
+
+    return policy, V
+
+def policy_iteration_vectorized(mdp: MDP, theta=1e-10, max_iters=1000) -> Tuple[Policy, Array]:
+    """
+    Fully vectorized Policy Iteration.
+    Returns:
+        - Optimal policy (π*) as one-hot (n_states x n_actions)
+        - Optimal value function (V*)
+    """
+    policy = create_random_policy(mdp)
+
+    for _ in range(max_iters):
+        # --- Policy Evaluation ---
+        V = eval_policy_vectorized(mdp, policy, theta)
+
+        # --- Compute Q(s, a) = R(s, a) + γ ∑_s' P(s'|s,a) * V(s') ---
+        Q = mdp.reward + mdp.gamma * jnp.einsum("san,n->sa", mdp.transition, V)
+
+        # --- Greedy Policy Improvement ---
+        best_actions = jnp.argmax(Q, axis=1)
+        new_policy = jax.nn.one_hot(best_actions, mdp.n_actions)
+
+        # --- Check for convergence ---
+        if jnp.allclose(new_policy, policy):
+            break
+
+        policy = new_policy
 
     return policy, V
