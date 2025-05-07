@@ -20,7 +20,7 @@ class MDP(NamedTuple):
 
     def validate(self):
         # Check shape
-        assert self.transition.ndim == 3, f"Transition matrix must be 3D (s, a, s'), got {T.ndim}D"
+        assert self.transition.ndim == 3, f"Transition matrix must be 3D (s, a, s'), got {self.transition.ndim}D"
         n_states, n_actions, n_states_2 = self.transition.shape
         assert n_states == n_states_2, "Transition matrix last dim must equal number of states"
 
@@ -43,6 +43,17 @@ class MDP(NamedTuple):
         """
         H, W = self.states.shape
         return divmod(idx, W)
+    
+    def xy_to_idx(self, xy: Tuple[int, int]) -> int:
+        """
+        Convert (x, y) coordinates to a state index.
+        """
+        x, y = xy
+        H, W = self.states.shape
+        if 0 <= x < H and 0 <= y < W:
+            return x * W + y
+        else:
+            raise ValueError(f"Coordinates {xy} are out of bounds for grid of shape {self.states.shape}.")
     
     def iterate_states(self) -> Generator[Tuple[int, Tuple[int, int]], None, None]:
         """
