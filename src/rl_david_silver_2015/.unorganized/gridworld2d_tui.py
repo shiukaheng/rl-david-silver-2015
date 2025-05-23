@@ -2,7 +2,6 @@ import curses
 from curses import wrapper
 from typing import Tuple, List
 from jaxtyping import Array, Float
-import time
 import jax.numpy as jnp
 
 def gridworld2d_tui(mdp, start_pos: Tuple[int, int]=(0, 1), terminal_states: List[Tuple[int, int]] = [(0, 0), (3, 3)]):
@@ -24,7 +23,7 @@ def gridworld2d_tui(mdp, start_pos: Tuple[int, int]=(0, 1), terminal_states: Lis
                 if (i, j) == tuple(agent_pos):
                     ch = "@"
                 stdscr.addstr(i, j * 2, ch)
-        stdscr.addstr(H + 1, 0, f"Use WASD to move. Q to quit.")
+        stdscr.addstr(H + 1, 0, "Use WASD to move. Q to quit.")
         stdscr.addstr(H + 2, 0, f"Steps: {steps}   Total Reward: {total_reward}")
         stdscr.refresh()
 
