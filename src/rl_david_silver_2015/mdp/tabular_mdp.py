@@ -6,6 +6,7 @@ from rl_david_silver_2015.mdp.mdp import MDP, BatchedMDPReturn, MDPReturn
 import jax
 import jax.numpy as jnp
 from jaxtyping import Array, Float
+from functools import partial
 
 
 from dataclasses import dataclass
@@ -78,6 +79,7 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
         terminal_mask = jnp.all(match_self, axis=-1)  # shape: (n_states,)
         return jnp.nonzero(terminal_mask, size=self.n_states)[0]
 
+    @partial(jax.jit, static_argnums=0)
     def sample(self, s_t: TabularState, a_t: TabularAction, random_key: Array = DEFAULT_RANDOM_KEY) -> MDPReturn[TabularState]:
         """
         Scalar version of sampling that delegates to the batched version.
@@ -94,6 +96,7 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
             terminal=return_batched.terminal[0],
         )
 
+    @partial(jax.jit, static_argnums=0)
     def sample_batched(
         self,
         s_t: BatchTabularState,

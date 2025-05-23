@@ -4,6 +4,7 @@ from rl_david_silver_2015.mdp.constants import DEFAULT_RANDOM_KEY
 import jax.numpy as jnp
 from jaxtyping import Array, Float
 import jax
+from functools import partial
 
 
 from dataclasses import dataclass
@@ -33,7 +34,8 @@ class TabularPolicy(Policy[TabularState, TabularAction, BatchTabularState, Batch
             bad_s = jnp.where(jnp.abs(probs_sum - 1.0) > threshold)
             raise ValueError(f"Policy probabilities must sum to 1 for each s. "
                              f"Failed at indices: {bad_s} with threshold {threshold}")
-        
+
+    @partial(jax.jit, static_argnums=0)
     def sample(self, s_t: TabularState, random_key: Array = DEFAULT_RANDOM_KEY) -> TabularAction:
         """ Sample an action from the policy given a state. """
         s_batched = jnp.expand_dims(s_t, axis=0) 
@@ -42,6 +44,7 @@ class TabularPolicy(Policy[TabularState, TabularAction, BatchTabularState, Batch
         # Unwrap
         return return_batched[0]
     
+    @partial(jax.jit, static_argnums=0)
     def sample_batched(self, s_t: BatchTabularState, random_key: Array = DEFAULT_RANDOM_KEY) -> BatchTabularAction:
         """ Sample actions for a batch of states with vectorized keys. """
         batch_size = s_t.shape[0]
