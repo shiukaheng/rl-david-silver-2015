@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from typing import Sequence, Tuple, List
+from typing import Callable, Sequence, Tuple, List
 from rl_david_silver_2015.mdp.tabular_mdp import TabularMDP
 
 def create_gridworld_2d_tabular(
@@ -7,7 +7,7 @@ def create_gridworld_2d_tabular(
     terminal_states: Sequence[Tuple[int, int]] = ((0, 0), (3, 3)),
     step_cost: float = -1.0,
     gamma: float = 0.9,
-) -> TabularMDP:
+) -> Tuple[TabularMDP, Callable[[int], Tuple[int, int]], Callable[[Tuple[int, int]], int]]:
     """
     Build a deterministic 2D gridworld as a TabularMDP.
     - shape: (H, W) grid
@@ -69,10 +69,25 @@ def create_gridworld_2d_tabular(
                 if (ni, nj) in terminal_states:
                     R = R.at[s, a].set(0.0)
 
+    def idx_to_state(s: int) -> Tuple[int, int]:
+        """Convert state index to (row, col) tuple."""
+        return divmod(s, W)
+
+    def state_to_idx(state: Tuple[int, int]) -> int:
+        """Convert (row, col) tuple to state index."""
+        return state[0] * W + state[1]    
+
     return TabularMDP(
         n_states=n_states,
         n_actions=n_actions,
         transition=T,
         reward=R,
         gamma=gamma,
-    )
+    ), idx_to_state, state_to_idx
+
+ACTION_TO_INDEX = {
+    'up': 0,
+    'down': 1,
+    'left': 2,
+    'right': 3,
+}

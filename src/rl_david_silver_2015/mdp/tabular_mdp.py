@@ -6,7 +6,8 @@ from rl_david_silver_2015.mdp.mdp import MDP, BatchedMDPReturn, MDPReturn
 import jax
 import jax.numpy as jnp
 from jaxtyping import Array, Float
-from functools import partial
+from jax.experimental.checkify import checkify
+from flax import struct
 
 
 from dataclasses import dataclass
@@ -52,14 +53,12 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
 
         # Check transition probabilities
         probs_sum = jnp.sum(self.transition, axis=2)
-        if not jnp.allclose(probs_sum, 1.0, atol=1e-5):
-            bad_sa = jnp.where(jnp.abs(probs_sum - 1.0) > 1e-5)
-            raise ValueError(f"Transition probabilities must sum to 1 for each (s,a). "
-                            f"Failed at indices: {bad_sa}")
+        ok = jnp.allclose(probs_sum, 1.0, atol=1e-5)
+        checkify(ok, f"Transition probabilities must sum to 1 for each (s,a).")
 
         # Check gamma
-        if not (0.0 <= self.gamma <= 1.0):
-            raise ValueError(f"Discount factor gamma={self.gamma} must be in [0, 1]")
+        ok = jnp.logical_and(0.0 <= self.gamma, self.gamma <= 1.0)
+        checkify(ok, f"Discount factor gamma={self.gamma} must be in [0, 1]")
 
     @cached_property
     def terminal_state_indices(self) -> jnp.ndarray:
@@ -79,7 +78,7 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
         terminal_mask = jnp.all(match_self, axis=-1)  # shape: (n_states,)
         return jnp.nonzero(terminal_mask, size=self.n_states)[0]
 
-    @partial(jax.jit, static_argnums=0)
+    @jax.jit
     def sample(self, s_t: TabularState, a_t: TabularAction, random_key: Array = DEFAULT_RANDOM_KEY) -> MDPReturn[TabularState]:
         """
         Scalar version of sampling that delegates to the batched version.
@@ -96,7 +95,7 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
             terminal=return_batched.terminal[0],
         )
 
-    @partial(jax.jit, static_argnums=0)
+    @jax.jit
     def sample_batched(
         self,
         s_t: BatchTabularState,
