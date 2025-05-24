@@ -33,7 +33,7 @@ def test_terminal_state_indices_correct():
     R = jnp.zeros((2, 2))
     mdp = TabularMDP(2, 2, T, R, gamma=0.5)
 
-    terminals = mdp.terminal_state_indices
+    terminals = mdp._calculate_terminal_state_indices
     # Unique terminal states should be {0}
     unique = jnp.unique(terminals)
     assert jnp.array_equal(unique, jnp.array([0]))

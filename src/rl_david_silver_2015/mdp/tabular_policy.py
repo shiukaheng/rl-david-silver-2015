@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from rl_david_silver_2015.mdp.policy import Policy
 from rl_david_silver_2015.mdp.tabular_types import TabularState, TabularAction, BatchTabularState, BatchTabularAction
 
-
+@jax.tree_util.register_dataclass
 @dataclass(frozen=True)
 class TabularPolicy(Policy[TabularState, TabularAction, BatchTabularState, BatchTabularAction]):
 
@@ -35,7 +35,6 @@ class TabularPolicy(Policy[TabularState, TabularAction, BatchTabularState, Batch
         ok = jnp.allclose(probs_sum, 1.0, atol=threshold)
         checkify(ok, f"Policy probabilities do not sum to 1.0: {probs_sum} (threshold: {threshold})")
 
-    @jax.jit
     def sample(self, s_t: TabularState, random_key: Array = DEFAULT_RANDOM_KEY) -> TabularAction:
         """ Sample an action from the policy given a state. """
         s_batched = jnp.expand_dims(s_t, axis=0) 
@@ -44,7 +43,6 @@ class TabularPolicy(Policy[TabularState, TabularAction, BatchTabularState, Batch
         # Unwrap
         return return_batched[0]
     
-    @jax.jit
     def sample_batched(self, s_t: BatchTabularState, random_key: Array = DEFAULT_RANDOM_KEY) -> BatchTabularAction:
         """ Sample actions for a batch of states with vectorized keys. """
         batch_size = s_t.shape[0]

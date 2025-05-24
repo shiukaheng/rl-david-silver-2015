@@ -5,19 +5,19 @@ from rl_david_silver_2015.mdp.mdp import MDP, BatchedMDPReturn, MDPReturn
 
 import jax
 import jax.numpy as jnp
-from jaxtyping import Array, Float
+from jaxtyping import Array, Float, Int
 from jax.experimental.checkify import checkify
 from flax import struct
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 
 from rl_david_silver_2015.mdp.tabular_policy import TabularPolicy
 from rl_david_silver_2015.mdp.tabular_types import TabularAction, TabularState, BatchTabularState, BatchTabularAction
 
 
-
+@jax.tree_util.register_dataclass
 @dataclass(frozen=True)
 class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabularAction]):
     """
@@ -36,9 +36,11 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
     transition: Float[Array, "n_states n_actions n_states"]
     reward: Float[Array, "n_states n_actions"]
     gamma: Gamma
+    terminal_states: Int[Array, "n_terminal_states"] = field(init=False, repr=False)
 
     def __post_init__(self):
         self.assert_mdp_valid()
+        self.terminal_states = self._calculate_terminal_state_indices()
 
     def assert_mdp_valid(self):
         """
@@ -60,8 +62,7 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
         ok = jnp.logical_and(0.0 <= self.gamma, self.gamma <= 1.0)
         checkify(ok, f"Discount factor gamma={self.gamma} must be in [0, 1]")
 
-    @cached_property
-    def terminal_state_indices(self) -> jnp.ndarray:
+    def _calculate_terminal_state_indices(self) -> jnp.ndarray:
         """
         Returns the indices of terminal states.
 
@@ -78,7 +79,6 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
         terminal_mask = jnp.all(match_self, axis=-1)  # shape: (n_states,)
         return jnp.nonzero(terminal_mask, size=self.n_states)[0]
 
-    @jax.jit
     def sample(self, s_t: TabularState, a_t: TabularAction, random_key: Array = DEFAULT_RANDOM_KEY) -> MDPReturn[TabularState]:
         """
         Scalar version of sampling that delegates to the batched version.
@@ -95,7 +95,6 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
             terminal=return_batched.terminal[0],
         )
 
-    @jax.jit
     def sample_batched(
         self,
         s_t: BatchTabularState,
@@ -122,7 +121,7 @@ class TabularMDP(MDP[TabularState, TabularAction, BatchTabularState, BatchTabula
 
         # Get rewards and terminal status
         r_tp1 = self.reward[s_t, a_t]  # shape: (b,)
-        terminal = jnp.isin(s_tp1, self.terminal_state_indices)  # shape: (b,)
+        terminal = jnp.isin(s_tp1, self._calculate_terminal_state_indices)  # shape: (b,)
 
         return BatchedMDPReturn(r_tp1=r_tp1, s_tp1=s_tp1, terminal=terminal)
     

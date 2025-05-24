@@ -53,16 +53,24 @@ def sample_mdp_batched_generator(
     seq_idx = jnp.arange(s_1s.shape[0]) # sequence for each episode being run in batch
     seq_idx_mask = jnp.ones_like(seq_idx, dtype=bool) # mask for the sequence index
     t = 1
+
+    @jax.jit
+    def _sample_policy_batched(s_t: BatchedStateType, action_key: Array) -> BatchedActionType:
+        return pi.sample_batched(s_t, action_key)
+    
+    @jax.jit
+    def _sample_mdp_batched(s_t: BatchedStateType, a_t: BatchedActionType, state_key: Array) -> EnvironmentUpdate[StateType]:
+        return mdp.sample_batched(s_t, a_t, state_key)
     
     while bool(jnp.any(seq_idx_mask)) and t < max_n:
         random_key, action_key, state_key = jax.random.split(random_key, 3)
         seq_subset = seq_idx[seq_idx_mask]
         s_t_masked = s_t[seq_idx_mask]
         # Sample actions for the current states
-        a_t = pi.sample_batched(s_t_masked, action_key)
+        a_t = _sample_policy_batched(s_t_masked, action_key)
         yield AgentUpdate(seq_subset, a_t)
         # Sample next states and rewards
-        mdp_return = mdp.sample_batched(s_t_masked, a_t, state_key)
+        mdp_return = _sample_mdp_batched(s_t_masked, a_t, state_key)
         yield EnvironmentUpdate(seq_subset, mdp_return.r_tp1, mdp_return.s_tp1, mdp_return.terminal)
         s_t = s_t.at[seq_subset].set(mdp_return.s_tp1)
         new_terminal_idx = seq_subset[mdp_return.terminal]
