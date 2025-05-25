@@ -1,7 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Generic, TypeVar
 
-from rl_david_silver_2015.mdp.common import BatchedActionType, BatchedStateType, BatchedTerminal, MDPSample, RandomKey
+from rl_david_silver_2015.mdp.common import (
+    BatchedActionType,
+    BatchedStateType,
+    BatchedTerminal,
+    MDPSample,
+    RandomKey,
+)
 
 MDPType = TypeVar("MDPType")
 PolicyType = TypeVar("PolicyType")
