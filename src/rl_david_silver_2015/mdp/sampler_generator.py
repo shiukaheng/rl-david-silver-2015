@@ -2,9 +2,9 @@ from typing import Callable, Generic, Iterator, NamedTuple, Type, TypeVar
 from jaxtyping import Array, Int, Float, Bool
 import jax
 import jax.numpy as jnp
-from rl_david_silver_2015.mdp2.common import BatchedTerminal, RandomKey
-from rl_david_silver_2015.mdp3.abstract_mdpf import AbstractMDPFramework, BatchedStateType, MDPType, PolicyType
-from rl_david_silver_2015.mdp3.common import DEFAULT_RANDOM_KEY, BatchedActionType, BatchedReward, MDPSample
+from rl_david_silver_2015.mdp.common import BatchedTerminal, RandomKey
+from rl_david_silver_2015.mdp.abstract_mdpf import AbstractMDPFramework, BatchedStateType, MDPType, PolicyType
+from rl_david_silver_2015.mdp.common import DEFAULT_RANDOM_KEY, BatchedActionType, BatchedReward, MDPSample
 
 MDPFrameworkType = TypeVar('MDPFrameworkType', bound='AbstractMDPFramework')
 
