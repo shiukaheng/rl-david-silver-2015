@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import NamedTuple
-from rl_david_silver_2015.mdp3.abstract_mdpf import AbstractMDPFramework
+from rl_david_silver_2015.mdp.abstract_mdpf import AbstractMDPFramework
 from jaxtyping import Array, Float, Int, Bool
 import jax.numpy as jnp
 import jax
 
-from rl_david_silver_2015.mdp3.common import MDPSample, RandomKey
+from rl_david_silver_2015.mdp.common import MDPSample, RandomKey
 
 class TabularMDP(NamedTuple):
     """
