@@ -3,10 +3,24 @@
         "**/.git": true,
         "**/.svn": true,
         "**/.hg": true,
-        "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
-        "**/__pycache__": true
+        "**/CVS": true,
+        "**/__pycache__": true,
+        ".gitattributes": true,
+        ".python-version": true,
+        "pyproject.toml": true,
+        "uv.lock": true,
+        ".gitignore": true,
+        "src/.vscode": true
     },
-    "hide-files.files": []
+    "hide-files.files": [
+        ".gitattributes",
+        ".python-version",
+        "pyproject.toml",
+        "uv.lock",
+        ".gitignore",
+        "src/.vscode",
+        ".vscode"
+    ]
 }

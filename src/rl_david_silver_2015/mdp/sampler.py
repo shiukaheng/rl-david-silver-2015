@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from typing import Tuple
 from rl_david_silver_2015.mdp.abstract_mdpf import (
     AbstractMDPFramework,
     MDPType,
@@ -25,8 +25,7 @@ def jit_sample_mdp_n_steps(
             MDPType,
             PolicyType,
             BatchedStateType,
-            BatchedActionType,
-            Callable[[BatchedStateType], BatchedTerminal],
+            BatchedActionType
         ]
     ],
     initial_state: BatchedStateType,

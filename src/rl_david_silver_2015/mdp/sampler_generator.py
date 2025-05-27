@@ -1,5 +1,5 @@
-from typing import Callable, Generic, Iterator, NamedTuple, Type, TypeVar
-from jaxtyping import Array, Int, Float, Bool
+from typing import Generic, Iterator, NamedTuple, TypeVar, cast
+from jaxtyping import Array, Int
 import jax
 import jax.numpy as jnp
 from rl_david_silver_2015.mdp.common import BatchedTerminal, RandomKey
@@ -73,7 +73,7 @@ def sample_mdp_batched_generator(
         assert isinstance(state_key, RandomKey)
 
         seq_subset = seq_idx[seq_idx_mask]
-        s_t_masked: BatchedStateType = s_t[seq_idx_mask]
+        s_t_masked: BatchedStateType = cast(BatchedStateType, s_t[seq_idx_mask])
 
         # Sample actions for the current states
         a_t = mdp_framework.sample_policy(policy, s_t_masked, action_key)

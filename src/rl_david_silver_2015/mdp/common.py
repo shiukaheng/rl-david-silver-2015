@@ -5,8 +5,8 @@ import jax
 
 MDPType = TypeVar("MDPType")
 PolicyType = TypeVar("PolicyType")
-BatchedStateType = TypeVar("BatchedStateType")
-BatchedActionType = TypeVar("BatchedActionType")
+BatchedStateType = TypeVar("BatchedStateType", bound=Array)  # Batched states
+BatchedActionType = TypeVar("BatchedActionType", bound=Array)  # Batched actions
 BatchedReward = Float[Array, "b"]  # Batched rewards
 BatchedTerminal = Bool[Array, "b"]  # Batched terminal status
 RandomKey = Array  # Typically a JAX PRNG key
