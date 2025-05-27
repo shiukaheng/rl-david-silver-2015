@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import NamedTuple
-from rl_david_silver_2015.mdp.abstract_mdpf import AbstractMDPFramework
+from rl_david_silver_2015.mdp.abstract_mdpf import AbstractMDPFramework, TerminalPredicate
 from jaxtyping import Array, Float, Int, Bool
 import jax.numpy as jnp
 import jax
@@ -51,13 +51,12 @@ class TabularMDPFramework(
         TabularMDP,
         TabularPolicy,
         TabularBatchedState,
-        TabularBatchedAction,
-        TabularTerminalPredicate,
+        TabularBatchedAction
     ]
 ):
 
     @staticmethod
-    def get_terminal_state_predicate(mdp: TabularMDP) -> TabularBatchedState:
+    def get_terminal_state_predicate(mdp: TabularMDP) -> TabularTerminalPredicate:
         """
         Get the terminal states of the MDP.
         """

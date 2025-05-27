@@ -39,8 +39,7 @@ def sample_mdp_batched_generator(
             MDPType,
             PolicyType,
             BatchedStateType,
-            BatchedActionType,  # now concrete, not “left open”
-            Callable[[BatchedStateType], BatchedTerminal],
+            BatchedActionType
         ]
     ],
     s_1s: BatchedStateType,
