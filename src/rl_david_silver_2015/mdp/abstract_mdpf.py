@@ -22,7 +22,7 @@ class AbstractMDPFramework(
 ):
     @staticmethod
     @abstractmethod
-    def get_terminal_state_predicate(mdp: MDPType) -> TerminalPredicate:
+    def get_terminal_state_predicate(mdp: MDPType) -> TerminalPredicate[BatchedStateType]:
         """
         Get the terminal states of the MDP.
         """
