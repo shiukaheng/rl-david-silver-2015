@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Tuple, Callable
+import jax
 import jax.numpy as jnp
 from jaxtyping import Array, Int, Float, Bool
 from jax.experimental.checkify import checkify
@@ -48,47 +49,45 @@ def tabular_2d_policy_to_1d(policy: Tabular2DPolicy) -> TabularPolicy:
     return jnp.reshape(policy, (-1, policy.shape[-1]))
 
 
-@dataclass(frozen=True)
+@jax.tree_util.register_pytree_node_class
 class Tabular2DMDP:
-    mdp1d: TabularMDP
-    # Grid shape as Python ints for JIT safety
-    shape: Tuple[int, int]
-
-    @staticmethod
-    def create(
+    """
+    2D-grid wrapper for a flat TabularMDP.  Initialize with 2D transition and reward arrays.
+    This class is a JAX PyTree: P, R, and gamma are leaves; shape is auxiliary.
+    """
+    def __init__(
+        self,
         prob2d: Float[Array, "state_x state_y actions state_x state_y"],
         reward2d: Float[Array, "state_x state_y actions"],
         gamma: Float[Array, ""]
-    ) -> "Tabular2DMDP":
-        """
-        Build a 2D MDP from raw 2D probabilities and rewards.
-
-        Args:
-            prob2d: transition tensor of shape (sx, sy, a, sx, sy)
-            reward2d: reward tensor of shape (sx, sy, a)
-            gamma: discount factor scalar
-        Returns:
-            A Tabular2DMDP wrapping a flat TabularMDP
-        """
-        sx, sy, a = prob2d.shape[0], prob2d.shape[1], prob2d.shape[2]
-        # Validate reward shape
+    ):
+        # shape extraction
+        sx, sy, a = int(prob2d.shape[0]), int(prob2d.shape[1]), int(prob2d.shape[2])
         if reward2d.shape != (sx, sy, a):
-            raise ValueError(f"reward2d shape {reward2d.shape} must be ({{sx}}, {{sy}}, {{a}})")
-        # Validate prob2d target grid dims
+            raise ValueError(f"reward2d shape {reward2d.shape} must be ({sx}, {sy}, {a})")
         if prob2d.shape[3:] != (sx, sy):
-            raise ValueError(f"prob2d target dims {prob2d.shape[3:]} must be ({{sx}}, {{sy}})")
-        # Number of states
+            raise ValueError(f"prob2d target dims {prob2d.shape[3:]} must be ({sx}, {sy})")
+        # flatten dimensions
         n = sx * sy
-        # Rearrange and flatten transitions to (n, a, n)
-        #  prob2d: (sx, sy, a, sx, sy) -> (sx, sy, sx, sy, a)
-        reordered = jnp.transpose(prob2d, (0, 1, 3, 4, 2))
-        flat = jnp.reshape(reordered, (n, n, a))
-        P1d = jnp.transpose(flat, (0, 2, 1))  # (n_states, n_actions, n_states)
-        # Flatten rewards to (n, a)
-        R1d = jnp.reshape(reward2d, (n, a))
-        # Build 1D MDP
-        mdp1d = TabularMDP(P=P1d, R=R1d, gamma=gamma)
-        return Tabular2DMDP(mdp1d=mdp1d, shape=(sx, sy))
+        reordered = jnp.transpose(prob2d, (0, 1, 3, 4, 2))  # (sx, sy, sx, sy, a)
+        flat = jnp.reshape(reordered, (n, n, a))             # (sx*sy, sx*sy, a)
+        P1d = jnp.transpose(flat, (0, 2, 1))                  # (n, a, n)
+        R1d = jnp.reshape(reward2d, (n, a))                   # (n, a)
+        self.mdp1d = TabularMDP(P=P1d, R=R1d, gamma=gamma)
+        self.shape = (sx, sy)
+
+    def tree_flatten(self):
+        # P, R, gamma are leaves; shape is auxiliary static data
+        P, R, gamma = self.mdp1d.P, self.mdp1d.R, self.mdp1d.gamma
+        return (P, R, gamma), self.shape
+
+    @classmethod
+    def tree_unflatten(cls, aux_data, children):
+        # Reconstruct from leaves and aux_data
+        sx_sy = aux_data
+        P, R, gamma = children
+        mdp1d = TabularMDP(P=P, R=R, gamma=gamma)
+        return cls(mdp1d=mdp1d, shape=sx_sy)
 
 
 class Tabular2DMDPFramework(
