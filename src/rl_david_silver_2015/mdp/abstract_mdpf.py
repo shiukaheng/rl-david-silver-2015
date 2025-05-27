@@ -11,20 +11,18 @@ from rl_david_silver_2015.mdp.common import (
 
 MDPType = TypeVar("MDPType")
 PolicyType = TypeVar("PolicyType")
-TerminalPredicateType = TypeVar(
-    "TerminalEvaluatorType", bound=Callable[[BatchedStateType], BatchedTerminal]
-)
+TerminalPredicate = Callable[[BatchedStateType], BatchedTerminal]
 
 
 class AbstractMDPFramework(
     ABC,
     Generic[
-        MDPType, PolicyType, BatchedStateType, BatchedActionType, TerminalPredicateType
+        MDPType, PolicyType, BatchedStateType, BatchedActionType
     ],
 ):
     @staticmethod
     @abstractmethod
-    def get_terminal_state_predicate(mdp: MDPType) -> TerminalPredicateType:
+    def get_terminal_state_predicate(mdp: MDPType) -> TerminalPredicate:
         """
         Get the terminal states of the MDP.
         """
